@@ -2,7 +2,7 @@
 
 A modern healthcare provider portal built with Vite, React, and Tailwind CSS.
 
-## Features
+### Features
 
 - **Reusable AppLayout Component**: Sidebar navigation and topbar with search functionality
 - **Provider Dashboard**: Comprehensive dashboard with summary cards and patient eligibility checks
