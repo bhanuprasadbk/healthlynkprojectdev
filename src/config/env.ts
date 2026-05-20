@@ -36,7 +36,7 @@ function isDeployedSpaHost(): boolean {
   const host = window.location.hostname.toLowerCase()
   return (
     host === 'healthlynk.ai' ||
-    host === 'www.healthlynk.ai' ||
+    host === 'www.healthlynk.ai' || https://agreeable-cliff-0981a8210.7.azurestaticapps.net ||
     host.endsWith('.azurestaticapps.net')
   )
 }
