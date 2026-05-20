@@ -36,7 +36,7 @@ export default defineConfig(({ mode }) => {
   }
   // Dev proxy target: production SWA-linked API (same backend as healthlynk.ai in prod).
   // Do NOT proxy to *.azurewebsites.net — App Service Authentication blocks login there.
-  const defaultApiProxyTarget = 'https://healthlynk.ai'
+  const defaultApiProxyTarget = 'https://agreeable-cliff-0981a8210.7.azurestaticapps.net'
   // Overrides: VITE_DEV_API_PROXY_TARGET=http://127.0.0.1:5000 (local Flask)
   const apiProxyTarget = (env.VITE_DEV_API_PROXY_TARGET || defaultApiProxyTarget).trim()
 
