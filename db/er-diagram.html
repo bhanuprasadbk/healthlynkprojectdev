@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HealthLynk — ER Diagram &amp; FK mapping</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card: #fff;
+      --border: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --accent: #0ea5e9;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      background: linear-gradient(135deg, #0c4a6e 0%, #0e7490 100%);
+      color: #fff;
+      padding: 1.75rem 1.5rem;
+    }
+    header h1 { margin: 0 0 0.35rem; font-size: 1.5rem; font-weight: 700; }
+    header p { margin: 0; opacity: 0.92; font-size: 0.95rem; }
+    main { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+    section {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
+    }
+    section h2 {
+      margin: 0 0 1rem;
+      font-size: 1.15rem;
+      color: #0c4a6e;
+      border-bottom: 2px solid var(--accent);
+      padding-bottom: 0.35rem;
+    }
+    .mermaid { display: flex; justify-content: center; overflow-x: auto; }
+    table.fk-map {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+    table.fk-map th,
+    table.fk-map td {
+      border: 1px solid var(--border);
+      padding: 0.5rem 0.65rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    table.fk-map th {
+      background: #f1f5f9;
+      font-weight: 600;
+    }
+    table.fk-map tr:nth-child(even) td { background: #fafbfc; }
+    code {
+      font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+      font-size: 0.82em;
+      background: #f1f5f9;
+      padding: 0.12em 0.35em;
+      border-radius: 4px;
+    }
+    .note { color: var(--muted); font-size: 0.9rem; margin-top: 0.75rem; }
+    footer {
+      text-align: center;
+      padding: 1rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>HealthLynk database — ER diagrams</h1>
+    <p>Derived from <code>db/healthlynk_schema.sql</code> · PostgreSQL · Relationships and foreign-key mapping</p>
+  </header>
+  <main>
+    <section>
+      <h2>1. Payors, providers &amp; procedure codes</h2>
+      <pre class="mermaid">
+erDiagram
+    payors ||--o{ payor_plans : "has"
+    providers ||--o{ provider_locations : "has"
+    product_service_types ||--o{ cpt_hcpc_codes : "classifies"
+      </pre>
+    </section>
+
+    <section>
+      <h2>2. Patients, coverage &amp; intake</h2>
+      <pre class="mermaid">
+erDiagram
+    patients ||--o{ subscribers : "has"
+    patients ||--o{ patient_insurance_policies : "has"
+    subscribers ||--o{ patient_insurance_policies : "policy_holder"
+    payors ||--o{ patient_insurance_policies : "covers"
+    payor_plans ||--o{ patient_insurance_policies : "plan"
+    patients ||--o{ intake_sessions : "opens"
+    users ||--o{ intake_sessions : "creates"
+    patients ||--o{ insurance_card_uploads : "uploads"
+      </pre>
+    </section>
+
+    <section>
+      <h2>3. Eligibility &amp; prior authorization</h2>
+      <pre class="mermaid">
+erDiagram
+    patients ||--o{ eligibility_checks : "for"
+    payors ||--o{ eligibility_checks : "payor"
+    payor_plans ||--o{ eligibility_checks : "plan"
+    intake_sessions ||--o{ eligibility_checks : "from_session"
+    users ||--o{ eligibility_checks : "created_by"
+    patients ||--o{ prior_authorizations : "patient"
+    payors ||--o{ prior_authorizations : "payor"
+    payor_plans ||--o{ prior_authorizations : "plan"
+    providers ||--o{ prior_authorizations : "provider"
+    prior_authorizations ||--o{ prior_auth_documents : "attachments"
+    prior_authorizations ||--o{ prior_auth_activity : "timeline"
+    users ||--o{ prior_auth_documents : "uploaded_by"
+    users ||--o{ prior_auth_activity : "performed_by"
+    users ||--o{ documents : "uploaded_by"
+      </pre>
+    </section>
+
+    <section>
+      <h2>4. Users, notifications &amp; chat</h2>
+      <pre class="mermaid">
+erDiagram
+    users ||--o{ notifications : "receives"
+    users ||--o{ chat_conversations : "owns"
+    chat_conversations ||--o{ chat_messages : "contains"
+      </pre>
+    </section>
+
+    <section>
+      <h2>5. AI agents &amp; permissions</h2>
+      <pre class="mermaid">
+erDiagram
+    permission_definitions ||--o{ agent_role_permissions : "level"
+    agent_roles ||--o{ agent_role_permissions : "default"
+    payors ||--o{ ai_agents : "scope"
+    payor_plans ||--o{ ai_agents : "scope"
+    users ||--o{ ai_agents : "created_by"
+    ai_agents ||--o{ ai_agent_roles : "uses"
+    agent_roles ||--o{ ai_agent_roles : "template"
+    ai_agents ||--o{ ai_agent_permission_overrides : "overrides"
+    permission_definitions ||--o{ ai_agent_permission_overrides : "perm"
+    ai_agents ||--o{ ai_agent_run_history : "runs"
+      </pre>
+    </section>
+
+    <section>
+      <h2>6. Tenant settings &amp; security</h2>
+      <pre class="mermaid">
+erDiagram
+    tenant_settings ||--|| tenant_theme_colors : "palette"
+    tenant_settings ||--|| security_settings : "security"
+    tenant_settings ||--o{ security_whitelist_items : "whitelist"
+    tenant_settings ||--o{ settings_audit_log : "audit"
+    users ||--o{ settings_audit_log : "changed_by"
+      </pre>
+    </section>
+
+    <section>
+      <h2>Foreign key mapping (column → referenced table.column)</h2>
+      <p class="note">ON DELETE behavior: CASCADE where child rows should be removed with parent; SET NULL where history may remain without actor.</p>
+      <table class="fk-map">
+        <thead>
+          <tr>
+            <th>Child table</th>
+            <th>FK column(s)</th>
+            <th>References</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td><code>payor_plans</code></td><td><code>payor_id</code></td><td><code>payors(id)</code></td><td>CASCADE</td></tr>
+          <tr><td><code>provider_locations</code></td><td><code>provider_id</code></td><td><code>providers(id)</code></td><td>CASCADE</td></tr>
+          <tr><td><code>cpt_hcpc_codes</code></td><td><code>product_service_slug</code></td><td><code>product_service_types(slug)</code></td><td></td></tr>
+          <tr><td><code>subscribers</code></td><td><code>patient_id</code></td><td><code>patients(id)</code></td><td>CASCADE</td></tr>
+          <tr><td><code>patient_insurance_policies</code></td><td><code>patient_id</code></td><td><code>patients(id)</code></td><td>CASCADE</td></tr>
+          <tr><td><code>patient_insurance_policies</code></td><td><code>subscriber_id</code></td><td><code>subscribers(id)</code></td><td>CASCADE</td></tr>
+          <tr><td><code>patient_insurance_policies</code></td><td><code>payor_id</code></td><td><code>payors(id)</code></td><td></td></tr>
+          <tr><td><code>patient_insurance_policies</code></td><td><code>plan_id</code></td><td><code>payor_plans(id)</code></td><td>nullable</td></tr>
+          <tr><td><code>intake_sessions</code></td><td><code>patient_id</code></td><td><code>patients(id)</code></td><td>SET NULL</td></tr>
+          <tr><td><code>intake_sessions</code></td><td><code>created_by_user_id</code></td><td><code>users(id)</code></td><td>SET NULL</td></tr>
+          <tr><td><code>insurance_card_uploads</code></td><td><code>patient_id</code></td><td><code>patients(id)</code></td><td>CASCADE</td></tr>
+          <tr><td><code>eligibility_checks</code></td><td><code>patient_id</code></td><td><code>patients(id)</code></td><td>CASCADE</td></tr>
+          <tr><td><code>eligibility_checks</code></td><td><code>payor_id</code></td><td><code>payors(id)</code></td><td></td></tr>
+          <tr><td><code>eligibility_checks</code></td><td><code>plan_id</code></td><td><code>payor_plans(id)</code></td><td>nullable</td></tr>
+          <tr><td><code>eligibility_checks</code></td><td><code>intake_session_id</code></td><td><code>intake_sessions(id)</code></td><td>SET NULL</td></tr>
+          <tr><td><code>eligibility_checks</code></td><td><code>created_by_user_id</code></td><td><code>users(id)</code></td><td>SET NULL</td></tr>
+          <tr><td><code>prior_authorizations</code></td><td><code>patient_id</code></td><td><code>patients(id)</code></td><td>CASCADE</td></tr>
+          <tr><td><code>prior_authorizations</code></td><td><code>payor_id</code></td><td><code>payors(id)</code></td><td></td></tr>
+          <tr><td><code>prior_authorizations</code></td><td><code>plan_id</code></td><td><code>payor_plans(id)</code></td><td>nullable</td></tr>
+          <tr><td><code>prior_authorizations</code></td><td><code>provider_id</code></td><td><code>providers(id)</code></td><td>nullable</td></tr>
+          <tr><td><code>prior_auth_documents</code></td><td><code>prior_auth_id</code></td><td><code>prior_authorizations(id)</code></td><td>CASCADE</td></tr>
+          <tr><td><code>prior_auth_documents</code></td><td><code>uploaded_by_user_id</code></td><td><code>users(id)</code></td><td>SET NULL</td></tr>
+          <tr><td><code>prior_auth_activity</code></td><td><code>prior_auth_id</code></td><td><code>prior_authorizations(id)</code></td><td>CASCADE</td></tr>
+          <tr><td><code>prior_auth_activity</code></td><td><code>performed_by_user_id</code></td><td><code>users(id)</code></td><td>SET NULL</td></tr>
+          <tr><td><code>documents</code></td><td><code>uploaded_by_user_id</code></td><td><code>users(id)</code></td><td>SET NULL</td></tr>
+          <tr><td><code>notifications</code></td><td><code>user_id</code></td><td><code>users(id)</code></td><td>CASCADE</td></tr>
+          <tr><td><code>chat_conversations</code></td><td><code>user_id</code></td><td><code>users(id)</code></td><td>CASCADE</td></tr>
+          <tr><td><code>chat_messages</code></td><td><code>conversation_id</code></td><td><code>chat_conversations(id)</code></td><td>CASCADE</td></tr>
+          <tr><td><code>agent_role_permissions</code></td><td><code>role_id</code></td><td><code>agent_roles(id)</code></td><td>CASCADE · PK part</td></tr>
+          <tr><td><code>agent_role_permissions</code></td><td><code>permission_key</code></td><td><code>permission_definitions(key)</code></td><td>CASCADE · PK part</td></tr>
+          <tr><td><code>ai_agents</code></td><td><code>payor_id</code></td><td><code>payors(id)</code></td><td>nullable</td></tr>
+          <tr><td><code>ai_agents</code></td><td><code>plan_id</code></td><td><code>payor_plans(id)</code></td><td>nullable</td></tr>
+          <tr><td><code>ai_agents</code></td><td><code>created_by_user_id</code></td><td><code>users(id)</code></td><td>SET NULL</td></tr>
+          <tr><td><code>ai_agent_roles</code></td><td><code>agent_id</code></td><td><code>ai_agents(id)</code></td><td>CASCADE · PK part</td></tr>
+          <tr><td><code>ai_agent_roles</code></td><td><code>role_id</code></td><td><code>agent_roles(id)</code></td><td>CASCADE · PK part</td></tr>
+          <tr><td><code>ai_agent_permission_overrides</code></td><td><code>agent_id</code></td><td><code>ai_agents(id)</code></td><td>CASCADE · PK part</td></tr>
+          <tr><td><code>ai_agent_permission_overrides</code></td><td><code>permission_key</code></td><td><code>permission_definitions(key)</code></td><td>CASCADE · PK part</td></tr>
+          <tr><td><code>ai_agent_run_history</code></td><td><code>agent_id</code></td><td><code>ai_agents(id)</code></td><td>CASCADE</td></tr>
+          <tr><td><code>tenant_theme_colors</code></td><td><code>tenant_settings_id</code></td><td><code>tenant_settings(id)</code></td><td>PK = FK · 1:1 · CASCADE</td></tr>
+          <tr><td><code>security_settings</code></td><td><code>tenant_settings_id</code></td><td><code>tenant_settings(id)</code></td><td>PK = FK · 1:1 · CASCADE</td></tr>
+          <tr><td><code>security_whitelist_items</code></td><td><code>tenant_settings_id</code></td><td><code>tenant_settings(id)</code></td><td>CASCADE</td></tr>
+          <tr><td><code>settings_audit_log</code></td><td><code>tenant_settings_id</code></td><td><code>tenant_settings(id)</code></td><td>CASCADE</td></tr>
+          <tr><td><code>settings_audit_log</code></td><td><code>changed_by_user_id</code></td><td><code>users(id)</code></td><td>SET NULL</td></tr>
+        </tbody>
+      </table>
+      <p class="note"><strong>Indexes (partial):</strong> <code>uq_provider_one_primary_location</code> on <code>provider_locations(provider_id)</code> WHERE <code>is_primary = TRUE</code> — at most one primary location per provider. Chat indexes: <code>idx_chat_conv_user_updated</code>, <code>idx_chat_msg_conv_created</code>.</p>
+    </section>
+
+    <section>
+      <h2>ENUM types (reference)</h2>
+      <p class="note" style="margin-top:0">Defined in schema: <code>user_role</code>, <code>active_status</code>, <code>gender_type</code>, <code>subscriber_relation</code>, <code>eligibility_check_status</code>, <code>prior_auth_status</code>, <code>prior_auth_urgency</code>, <code>code_category</code>, <code>permission_level</code>, <code>agent_runtime_status</code>, <code>agent_frequency_mode</code>, <code>agent_automation_job</code>, <code>chat_role</code>, <code>whitelist_type</code>, <code>document_entity_type</code>, <code>activity_event_type</code>.</p>
+    </section>
+  </main>
+  <footer>HealthLynk · Open this file in a browser (requires network for Mermaid CDN). For offline use, bundle mermaid locally.</footer>
+  <script type="module">
+    import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs";
+    mermaid.initialize({
+      theme: "neutral",
+      securityLevel: "loose",
+      er: { useMaxWidth: true },
+    });
+    await mermaid.run({ querySelector: "pre.mermaid" });
+  </script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+# Azure/Linux shell scripts must use LF or App Service can fail with $'\r': command not found
+*.sh text eol=lf

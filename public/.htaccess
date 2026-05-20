@@ -1,0 +1,8 @@
+# Apache: fallback to index.html for React Router (deploy with dist contents under /clients/healthlynk/).
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /clients/healthlynk/
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.html [L]
+</IfModule>
