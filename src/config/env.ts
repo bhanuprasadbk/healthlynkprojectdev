@@ -34,9 +34,7 @@ function sameOriginApiBase(): string {
 function isDeployedSpaHost(): boolean {
   if (typeof window === 'undefined') return false
   const host = window.location.hostname.toLowerCase()
-  return (
-    host === 'healthlynk.ai' ||
-    host === 'www.healthlynk.ai' || host ==='https://agreeable-cliff-0981a8210.7.azurestaticapps.net' ||
+  return (host ==='https://agreeable-cliff-0981a8210.7.azurestaticapps.net' ||
     host ==='https://www.agreeable-cliff-0981a8210.7.azurestaticapps.net' ||
     host.endsWith('.azurestaticapps.net')
   )
