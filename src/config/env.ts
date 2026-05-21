@@ -16,7 +16,7 @@ function requireEnv(name: keyof ImportMetaEnv): string {
 }
 
 const DEFAULT_API_BASE_URL =
-  'https://dev.healthlynk.ai/api'
+  'https://healthlynkapidev-h0ggfvfkeubmg6c3.centralus-01.azurewebsites.net/api'
 
 function readRuntimeApiBaseUrl(): string {
   if (typeof window === 'undefined') return ''
