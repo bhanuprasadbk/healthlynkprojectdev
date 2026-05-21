@@ -16,7 +16,7 @@ function requireEnv(name: keyof ImportMetaEnv): string {
 }
 
 const DEFAULT_API_BASE_URL =
-  'https://agreeable-cliff-0981a8210.7.azurestaticapps.net/api'
+  'https://dev.healthlynk.ai/api'
 
 function readRuntimeApiBaseUrl(): string {
   if (typeof window === 'undefined') return ''
@@ -35,8 +35,8 @@ function isDeployedSpaHost(): boolean {
   if (typeof window === 'undefined') return false
   const host = window.location.hostname.toLowerCase()
   return (
-    host === 'https://agreeable-cliff-0981a8210.7.azurestaticapps.net' ||
-    host === 'https://www.agreeable-cliff-0981a8210.7.azurestaticapps.net' ||
+    host === 'dev.healthlynk.ai' ||
+    host === 'www.dev.healthlynk.ai' ||
     host.endsWith('.azurestaticapps.net')
   )
 }
