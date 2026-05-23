@@ -16,7 +16,7 @@ function requireEnv(name: keyof ImportMetaEnv): string {
 }
 
 const DEFAULT_API_BASE_URL =
-  'https://healthlynkapidev-h0ggfvfkeubmg6c3.centralus-01.azurewebsites.net/api'
+  'https://healthlynkapi-e9dzgrfgaebvhre4.centralus-01.azurewebsites.net/api'
 
 function readRuntimeApiBaseUrl(): string {
   if (typeof window === 'undefined') return ''
@@ -35,6 +35,8 @@ function isDeployedSpaHost(): boolean {
   if (typeof window === 'undefined') return false
   const host = window.location.hostname.toLowerCase()
   return (
+    host === '    ' ||
+    host === 'www.healthlynk.ai' ||
     host === 'dev.healthlynk.ai' ||
     host === 'www.dev.healthlynk.ai' ||
     host.endsWith('.azurestaticapps.net')

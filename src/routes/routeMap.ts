@@ -18,6 +18,8 @@ export const ROUTES = {
   PROVIDER_NPI_LOCATION: '/provider-configuration/npi-location',
   CPT_HCPC: '/cpt-hcpc',
   PRIOR_AUTH: '/prior-auth',
+  /** Legacy underscore URL — redirects to PRIOR_AUTH */
+  PRIOR_AUTH_LEGACY: '/prior_auth',
   SETTINGS: '/settings',
   NOTIFICATIONS: '/notifications',
   DASHBOARD_SETTINGS: '/dashboard-settings',

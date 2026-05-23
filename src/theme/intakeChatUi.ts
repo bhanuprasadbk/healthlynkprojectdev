@@ -37,6 +37,10 @@ export type IntakeChatUi = {
   choicePanelStyle?: CSSProperties
   choiceHintClass: string
   choiceHintStyle?: CSSProperties
+  genderChoicePanelClass: string
+  genderChoicePanelStyle?: CSSProperties
+  genderOptionBtnClass: string
+  genderOptionBtnStyle?: CSSProperties
   listOptionBtnClass: string
   listOptionBtnStyle?: CSSProperties
   listOptionMetaClass: string
@@ -95,6 +99,10 @@ export function darkIntakeChatUi(): IntakeChatUi {
       'inline-flex items-center gap-2 rounded-xl border border-slate-600 bg-slate-800 px-3 py-2 text-sm text-slate-100 transition hover:border-violet-400',
     choicePanelClass: 'max-w-[92%] space-y-2 rounded-2xl border border-violet-400/25 bg-violet-500/10 p-3',
     choiceHintClass: 'text-xs text-violet-200',
+    genderChoicePanelClass:
+      'max-w-[92%] space-y-3 rounded-2xl border border-violet-400/35 bg-violet-500/10 p-4 shadow-sm',
+    genderOptionBtnClass:
+      'inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border-2 px-7 py-2.5 text-sm font-bold shadow-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-[0.97]',
     listOptionBtnClass:
       'block w-full rounded-lg border border-slate-600 bg-slate-800 px-3 py-2 text-left text-sm transition hover:border-violet-400',
     listOptionMetaClass: 'ml-2 text-xs text-slate-400',
@@ -142,29 +150,29 @@ export function providerIntakeChatUi(colors: ThemeColors): IntakeChatUi {
       backgroundColor: colors.cardBackground,
       borderColor: colors.cardBorder,
     },
-    botBubbleClass: 'border text-sm leading-relaxed',
+    botBubbleClass: 'border text-sm font-medium leading-relaxed shadow-sm',
     botBubbleStyle: {
-      backgroundColor: colors.inputBackground,
-      borderColor: colors.border,
+      backgroundColor: colors.primaryLight,
+      borderColor: '#bae6fd',
       color: colors.textPrimary,
     },
-    userBubbleClass: 'border text-sm leading-relaxed',
+    userBubbleClass: 'border text-[15px] font-semibold leading-relaxed shadow-md',
     userBubbleStyle: {
-      backgroundColor: colors.primaryLight,
-      borderColor: colors.primary,
+      backgroundColor: colors.cardBackground,
+      borderColor: '#7dd3fc',
       color: colors.textPrimary,
     },
     botAvatarClass:
-      'mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full',
-    botAvatarStyle: { backgroundColor: colors.border, color: colors.textPrimary },
+      'mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full shadow-sm',
+    botAvatarStyle: { backgroundColor: colors.primary, color: '#ffffff' },
     userAvatarClass:
-      'mt-0.5 inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full',
+      'mt-0.5 inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-full shadow-sm',
     userAvatarStyle: { backgroundColor: colors.primary, color: '#ffffff' },
     typingBubbleClass:
-      'inline-flex max-w-[92%] items-start gap-2 rounded-2xl border px-4 py-3 text-sm leading-relaxed shadow-sm',
+      'inline-flex max-w-[92%] items-start gap-2 rounded-2xl border px-4 py-3 text-sm font-medium leading-relaxed shadow-sm',
     typingBubbleStyle: {
-      backgroundColor: colors.inputBackground,
-      borderColor: colors.border,
+      backgroundColor: colors.primaryLight,
+      borderColor: '#bae6fd',
       color: colors.textPrimary,
     },
     actionPanelClass: 'max-w-[92%] space-y-3 rounded-2xl border p-4',
@@ -189,6 +197,13 @@ export function providerIntakeChatUi(colors: ThemeColors): IntakeChatUi {
     },
     choiceHintClass: 'text-xs font-medium',
     choiceHintStyle: { color: colors.textSecondary },
+    genderChoicePanelClass: 'max-w-[92%] space-y-3 rounded-2xl border p-4 shadow-sm',
+    genderChoicePanelStyle: {
+      backgroundColor: colors.cardBackground,
+      borderColor: colors.cardBorder,
+    },
+    genderOptionBtnClass:
+      'inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border-2 px-7 py-2.5 text-sm font-bold shadow-md transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 active:scale-[0.97]',
     listOptionBtnClass:
       'block w-full rounded-full border px-4 py-2.5 text-left text-sm font-medium shadow-sm transition-colors hover:bg-slate-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2',
     listOptionBtnStyle: {
@@ -229,15 +244,15 @@ export function providerIntakeChatUi(colors: ThemeColors): IntakeChatUi {
       color: colors.textPrimary,
     },
     providerSummaryClass:
-      'inline-flex max-w-[92%] items-start gap-3 rounded-2xl border px-4 py-3 text-sm shadow-sm',
+      'inline-flex max-w-[92%] items-start gap-3 rounded-2xl border px-4 py-3 text-sm font-medium shadow-sm',
     providerSummaryStyle: {
-      backgroundColor: colors.cardBackground,
-      borderColor: colors.border,
+      backgroundColor: colors.primaryLight,
+      borderColor: '#bae6fd',
       color: colors.textPrimary,
     },
     providerSummaryAvatarStyle: {
-      backgroundColor: colors.primaryLight,
-      color: colors.primary,
+      backgroundColor: colors.primary,
+      color: '#ffffff',
     },
     providerSummaryMetaStyle: { color: colors.textSecondary },
     completePanelClass: 'max-w-[92%] rounded-2xl border p-4',
@@ -269,3 +284,14 @@ export function intakeChatGradientClass(): string {
 export function intakeChatDarkBgClass(): string {
   return AI_ELIGIBILITY_FLOW_BG_CLASS
 }
+
+export type PatientGenderOption = {
+  value: 'male' | 'female' | 'other'
+  label: string
+}
+
+export const PATIENT_GENDER_OPTIONS: PatientGenderOption[] = [
+  { value: 'male', label: 'Male' },
+  { value: 'female', label: 'Female' },
+  { value: 'other', label: 'Other' },
+]

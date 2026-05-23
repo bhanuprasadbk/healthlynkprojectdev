@@ -25,6 +25,7 @@ import {
   EligibilityBenefitsCoverageSection,
   EligibilityBenefitServiceChatSection,
 } from '../components/EligibilityResultBenefitsPanel'
+import { PverifyFinancialPanel } from '../components/PverifyFinancialPanel'
 import Swal from 'sweetalert2'
 import { useTheme } from '../contexts/ThemeContext'
 import {
@@ -1116,12 +1117,20 @@ export default function EligibilityResultAi({ providerMode = false }: { provider
             <ProviderEligibilityPageHeader
               description="Review coverage, deductibles, and benefit details from the eligibility response."
               actions={
-                <Button type="button" variant="outline" onClick={() => void handleDownloadPdf()} disabled={pdfLoading}>
-                  <span className="inline-flex items-center gap-2">
-                    <Download className="h-4 w-4" />
-                    {pdfLoading ? 'Downloading...' : 'Download PDF'}
-                  </span>
-                </Button>
+                <>
+                  <Button type="button" variant="outline" onClick={() => void handleDownloadPdf()} disabled={pdfLoading}>
+                    <span className="inline-flex items-center gap-2">
+                      <Download className="h-4 w-4" />
+                      {pdfLoading ? 'Downloading...' : 'Download PDF'}
+                    </span>
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => navigate(intakeRoute)}>
+                    <span className="inline-flex items-center gap-2">
+                      <ArrowLeft className="h-4 w-4" />
+                      New Check
+                    </span>
+                  </Button>
+                </>
               }
             />
           ) : (
@@ -1153,58 +1162,62 @@ export default function EligibilityResultAi({ providerMode = false }: { provider
           )}
 
           {d.warnings.length > 0 && (
-            <section className="rounded-lg border border-amber-300/25 bg-amber-400/10 px-4 py-3 text-sm text-amber-200">
-              <p className="font-semibold">Member ID Corrected</p>
-              <p className="mt-1 text-amber-100/80">{d.warnings[0].message}</p>
+            <section
+              className={
+                providerMode
+                  ? 'rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm'
+                  : 'rounded-lg border border-amber-300/25 bg-amber-400/10 px-4 py-3 text-sm text-amber-200'
+              }
+              style={providerMode ? { color: theme.colors.textPrimary } : undefined}
+            >
+              <p className="font-semibold" style={providerMode ? { color: '#b45309' } : undefined}>
+                Member ID Corrected
+              </p>
+              <p
+                className="mt-1"
+                style={providerMode ? { color: theme.colors.textSecondary } : undefined}
+              >
+                {d.warnings[0].message}
+              </p>
             </section>
           )}
 
           <section className={ui.cardClass} style={ui.cardStyle}>
-            <div className="flex flex-wrap items-start justify-between gap-4">
-              <div>
-                <p
-                  className="text-[38px] font-bold leading-none"
-                  style={providerMode ? ui.patientNameStyle : undefined}
-                >
-                  {d.patientName || '—'}
-                </p>
-                <div className="mt-3 flex flex-wrap gap-2">
-                  <span className="rounded-full border border-emerald-300/30 bg-emerald-500/10 px-3 py-1 text-xs font-semibold text-emerald-300">
-                    {d.coverageActive ? 'Active Coverage' : 'Inactive Coverage'}
-                  </span>
-                  <span className="rounded-full border border-sky-300/30 bg-sky-500/10 px-3 py-1 text-xs font-semibold text-sky-300">
-                    {d.planType || 'Plan'}
-                  </span>
-                  <span className="rounded-full border border-violet-300/30 bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-300">
-                    DME Practice
-                  </span>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="text-xs uppercase tracking-wide text-slate-500">Payer</p>
-                <p className="text-lg font-bold text-sky-300">{d.payor || '—'}</p>
-                <p className="text-xs text-slate-500">ID {state?.apiMeta?.payerCode ?? '—'}</p>
-              </div>
-            </div>
+            <EligibilityMemberHero
+              providerMode={providerMode}
+              ui={ui}
+              borderColor={theme.colors.border}
+              statusEligible={d.coverageActive}
+              patientName={d.patientName || '—'}
+              payor={d.payor || '—'}
+              planName={d.planType}
+            />
             <div
-              className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 border-t pt-4 md:grid-cols-4"
-              style={providerMode ? { borderColor: theme.colors.border } : { borderColor: 'rgba(71, 85, 105, 0.5)' }}
+              className={
+                providerMode
+                  ? 'mt-5 flex flex-wrap items-end gap-x-8 gap-y-3'
+                  : 'mt-5 grid grid-cols-2 gap-x-6 gap-y-3 border-t pt-4 md:grid-cols-4'
+              }
+              style={providerMode ? undefined : { borderColor: 'rgba(71, 85, 105, 0.5)' }}
             >
               {[
                 ['Member ID', d.patientId],
-                ['Date of Birth', (() => {
-                  const dobRaw = firstNonEmpty(
-                    (state?.intakeContext as Record<string, unknown> | undefined)?.patientDOB,
-                    (state?.intakeContext as Record<string, unknown> | undefined)?.patientDob,
-                    ''
-                  )
-                  const dobText = String(dobRaw).trim()
-                  if (/^\d{4}-\d{2}-\d{2}$/.test(dobText)) {
-                    const [y, m, d] = dobText.split('-')
-                    return `${m}/${d}/${y}`
-                  }
-                  return dobText || '—'
-                })()],
+                [
+                  'Date of Birth',
+                  (() => {
+                    const dobRaw = firstNonEmpty(
+                      (state?.intakeContext as Record<string, unknown> | undefined)?.patientDOB,
+                      (state?.intakeContext as Record<string, unknown> | undefined)?.patientDob,
+                      ''
+                    )
+                    const dobText = String(dobRaw).trim()
+                    if (/^\d{4}-\d{2}-\d{2}$/.test(dobText)) {
+                      const [y, m, day] = dobText.split('-')
+                      return `${m}/${day}/${y}`
+                    }
+                    return dobText || '—'
+                  })(),
+                ],
                 ['Gender', genderDisplay],
                 ['Plan Effective', d.effectiveDateDisplay],
                 ['Group Number', d.groupNumber || '—'],
@@ -1212,11 +1225,17 @@ export default function EligibilityResultAi({ providerMode = false }: { provider
                 ['Plan Number', planNumberDisplay],
                 ['Address', addressDisplay],
               ].map(([label, value]) => (
-                <div key={String(label)}>
-                  <p className="text-[11px] font-semibold uppercase tracking-wide" style={ui.labelStyle}>
+                <div key={String(label)} className={providerMode ? 'shrink-0' : undefined}>
+                  <p
+                    className="text-[11px] font-semibold uppercase tracking-wide"
+                    style={ui.labelStyle}
+                  >
                     {label}
                   </p>
-                  <p className="mt-1 text-sm" style={ui.valueStyle}>
+                  <p
+                    className={providerMode ? 'mt-1 text-[15px]' : 'mt-1 text-sm'}
+                    style={ui.valueStyle}
+                  >
                     {value}
                   </p>
                 </div>
@@ -1233,42 +1252,60 @@ export default function EligibilityResultAi({ providerMode = false }: { provider
               <span className="h-px flex-1" style={ui.dividerStyle} />
             </h2>
             <div className="grid gap-4 md:grid-cols-2">
-              <div className={providerMode ? ui.nestedCardClass : 'overflow-hidden rounded-xl border border-slate-700/80 bg-[#121a33] shadow-[0_4px_20px_rgba(0,0,0,0.3)]'}
-            style={providerMode ? ui.nestedCardStyle : undefined}>
-                <div className={providerMode ? 'flex items-center justify-between border-b px-4 py-3' : 'flex items-center justify-between border-b border-slate-700/80 bg-[#1b2647] px-4 py-3'}
-                  style={providerMode ? ui.cardHeaderStyle : undefined}>
-                  <p className="text-sm font-semibold text-slate-100">Deductible</p>
-                  <span className="rounded-md border border-sky-300/30 bg-sky-500/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-sky-300">In-Network</span>
-                </div>
-                <div className="space-y-3 px-4 py-4">
-                  <div className="flex items-start justify-between border-b border-slate-700 pb-3">
-                    <div><p className="text-sm text-slate-300">Individual</p><p className="text-xs text-slate-500">Calendar Year</p></div>
-                    <div className="text-right"><p className="font-bold text-slate-100">{usd(d.financial.deductible)}</p><p className="text-xs text-slate-500"><span className="font-semibold text-rose-300">{usd(d.financial.deductibleRemaining)}</span> remaining</p><div className="mt-1 h-0.5 w-20 rounded bg-slate-700"><div className="h-full rounded bg-rose-300" style={{ width: `${pct(d.financial.deductibleRemaining, d.financial.deductible)}%` }} /></div></div>
-                  </div>
-                  <div className="flex items-start justify-between">
-                    <div><p className="text-sm text-slate-300">Family</p><p className="text-xs text-slate-500">Calendar Year</p></div>
-                    <div className="text-right"><p className="font-bold text-slate-100">{usd(d.financial.deductible * 2.5)}</p><p className="text-xs text-slate-500"><span className="font-semibold text-rose-300">{usd(d.financial.deductibleRemaining * 1.5)}</span> remaining</p><div className="mt-1 h-0.5 w-20 rounded bg-slate-700"><div className="h-full rounded bg-amber-300" style={{ width: `${pct(d.financial.deductibleRemaining * 1.5, d.financial.deductible * 2.5)}%` }} /></div></div>
-                  </div>
-                </div>
-              </div>
-              <div className={providerMode ? ui.nestedCardClass : 'overflow-hidden rounded-xl border border-slate-700/80 bg-[#121a33] shadow-[0_4px_20px_rgba(0,0,0,0.3)]'}
-            style={providerMode ? ui.nestedCardStyle : undefined}>
-                <div className={providerMode ? 'flex items-center justify-between border-b px-4 py-3' : 'flex items-center justify-between border-b border-slate-700/80 bg-[#1b2647] px-4 py-3'}
-                  style={providerMode ? ui.cardHeaderStyle : undefined}>
-                  <p className="text-sm font-semibold text-slate-100">Deductible</p>
-                  <span className="rounded-md border border-rose-300/30 bg-rose-500/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-rose-300">Out-of-Network</span>
-                </div>
-                <div className="space-y-3 px-4 py-4">
-                  <div className="flex items-start justify-between border-b border-slate-700 pb-3">
-                    <div><p className="text-sm text-slate-300">Individual</p><p className="text-xs text-slate-500">Calendar Year</p></div>
-                    <div className="text-right"><p className="font-bold text-slate-100">{usd(d.financial.deductible * 2)}</p><p className="text-xs text-slate-500"><span className="font-semibold text-rose-300">{usd(d.financial.deductibleRemaining * 2)}</span> remaining</p><div className="mt-1 h-0.5 w-20 rounded bg-slate-700"><div className="h-full rounded bg-rose-300" style={{ width: `${pct(d.financial.deductibleRemaining * 2, d.financial.deductible * 2)}%` }} /></div></div>
-                  </div>
-                  <div className="flex items-start justify-between">
-                    <div><p className="text-sm text-slate-300">Family</p><p className="text-xs text-slate-500">Calendar Year</p></div>
-                    <div className="text-right"><p className="font-bold text-slate-100">{usd(d.financial.deductible * 5)}</p><p className="text-xs text-slate-500"><span className="font-semibold text-rose-300">{usd(d.financial.deductibleRemaining * 4)}</span> remaining</p><div className="mt-1 h-0.5 w-20 rounded bg-slate-700"><div className="h-full rounded bg-rose-300" style={{ width: `${pct(d.financial.deductibleRemaining * 4, d.financial.deductible * 5)}%` }} /></div></div>
-                  </div>
-                </div>
-              </div>
+              <PverifyFinancialPanel
+                title="Deductible"
+                network="in"
+                providerMode={providerMode}
+                ui={ui}
+                lines={[
+                  {
+                    label: 'Individual',
+                    sublabel: 'Calendar Year',
+                    amount: usd(d.financial.deductible),
+                    remaining: usd(d.financial.deductibleRemaining),
+                    remainingPct: pct(d.financial.deductibleRemaining, d.financial.deductible),
+                  },
+                  {
+                    label: 'Family',
+                    sublabel: 'Calendar Year',
+                    amount: usd(d.financial.deductible * 2.5),
+                    remaining: usd(d.financial.deductibleRemaining * 1.5),
+                    remainingPct: pct(
+                      d.financial.deductibleRemaining * 1.5,
+                      d.financial.deductible * 2.5
+                    ),
+                    barTone: 'amber',
+                  },
+                ]}
+              />
+              <PverifyFinancialPanel
+                title="Deductible"
+                network="out"
+                providerMode={providerMode}
+                ui={ui}
+                lines={[
+                  {
+                    label: 'Individual',
+                    sublabel: 'Calendar Year',
+                    amount: usd(d.financial.deductible * 2),
+                    remaining: usd(d.financial.deductibleRemaining * 2),
+                    remainingPct: pct(
+                      d.financial.deductibleRemaining * 2,
+                      d.financial.deductible * 2
+                    ),
+                  },
+                  {
+                    label: 'Family',
+                    sublabel: 'Calendar Year',
+                    amount: usd(d.financial.deductible * 5),
+                    remaining: usd(d.financial.deductibleRemaining * 4),
+                    remainingPct: pct(
+                      d.financial.deductibleRemaining * 4,
+                      d.financial.deductible * 5
+                    ),
+                  },
+                ]}
+              />
             </div>
           </section>
 
@@ -1281,42 +1318,63 @@ export default function EligibilityResultAi({ providerMode = false }: { provider
               <span className="h-px flex-1" style={ui.dividerStyle} />
             </h2>
             <div className="grid gap-4 md:grid-cols-2">
-              <div className={providerMode ? ui.nestedCardClass : 'overflow-hidden rounded-xl border border-slate-700/80 bg-[#121a33] shadow-[0_4px_20px_rgba(0,0,0,0.3)]'}
-            style={providerMode ? ui.nestedCardStyle : undefined}>
-                <div className={providerMode ? 'flex items-center justify-between border-b px-4 py-3' : 'flex items-center justify-between border-b border-slate-700/80 bg-[#1b2647] px-4 py-3'}
-                  style={providerMode ? ui.cardHeaderStyle : undefined}>
-                  <p className="text-sm font-semibold text-slate-100">Out-of-Pocket</p>
-                  <span className="rounded-md border border-sky-300/30 bg-sky-500/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-sky-300">In-Network</span>
-                </div>
-                <div className="space-y-3 px-4 py-4">
-                  <div className="flex items-start justify-between border-b border-slate-700 pb-3">
-                    <div><p className="text-sm text-slate-300">Individual</p><p className="text-xs text-slate-500">Includes Med & RX</p></div>
-                    <div className="text-right"><p className="font-bold text-slate-100">{usd(d.financial.outOfPocketMax)}</p><p className="text-xs text-slate-500"><span className="font-semibold text-rose-300">{usd(d.financial.outOfPocketRemaining)}</span> remaining</p><div className="mt-1 h-0.5 w-20 rounded bg-slate-700"><div className="h-full rounded bg-rose-300" style={{ width: `${pct(d.financial.outOfPocketRemaining, d.financial.outOfPocketMax)}%` }} /></div></div>
-                  </div>
-                  <div className="flex items-start justify-between">
-                    <div><p className="text-sm text-slate-300">Family</p><p className="text-xs text-slate-500">Includes Med & RX</p></div>
-                    <div className="text-right"><p className="font-bold text-slate-100">{usd(d.financial.outOfPocketMax * 2)}</p><p className="text-xs text-slate-500"><span className="font-semibold text-rose-300">{usd(d.financial.outOfPocketRemaining)}</span> remaining</p><div className="mt-1 h-0.5 w-20 rounded bg-slate-700"><div className="h-full rounded bg-amber-300" style={{ width: `${pct(d.financial.outOfPocketRemaining, d.financial.outOfPocketMax * 2)}%` }} /></div></div>
-                  </div>
-                </div>
-              </div>
-              <div className={providerMode ? ui.nestedCardClass : 'overflow-hidden rounded-xl border border-slate-700/80 bg-[#121a33] shadow-[0_4px_20px_rgba(0,0,0,0.3)]'}
-            style={providerMode ? ui.nestedCardStyle : undefined}>
-                <div className={providerMode ? 'flex items-center justify-between border-b px-4 py-3' : 'flex items-center justify-between border-b border-slate-700/80 bg-[#1b2647] px-4 py-3'}
-                  style={providerMode ? ui.cardHeaderStyle : undefined}>
-                  <p className="text-sm font-semibold text-slate-100">Out-of-Pocket</p>
-                  <span className="rounded-md border border-rose-300/30 bg-rose-500/10 px-3 py-1 text-[12px] font-semibold uppercase tracking-[0.08em] text-rose-300">Out-of-Network</span>
-                </div>
-                <div className="space-y-3 px-4 py-4">
-                  <div className="flex items-start justify-between border-b border-slate-700 pb-3">
-                    <div><p className="text-sm text-slate-300">Individual</p><p className="text-xs text-slate-500">Includes Med & RX</p></div>
-                    <div className="text-right"><p className="font-bold text-slate-100">{usd(d.financial.outOfPocketMax * 2)}</p><p className="text-xs text-slate-500"><span className="font-semibold text-rose-300">{usd(d.financial.outOfPocketRemaining * 2)}</span> remaining</p><div className="mt-1 h-0.5 w-20 rounded bg-slate-700"><div className="h-full rounded bg-rose-300" style={{ width: `${pct(d.financial.outOfPocketRemaining * 2, d.financial.outOfPocketMax * 2)}%` }} /></div></div>
-                  </div>
-                  <div className="flex items-start justify-between">
-                    <div><p className="text-sm text-slate-300">Family</p><p className="text-xs text-slate-500">Includes Med & RX</p></div>
-                    <div className="text-right"><p className="font-bold text-slate-100">{usd(d.financial.outOfPocketMax * 4)}</p><p className="text-xs text-slate-500"><span className="font-semibold text-rose-300">{usd(d.financial.outOfPocketRemaining * 3)}</span> remaining</p><div className="mt-1 h-0.5 w-20 rounded bg-slate-700"><div className="h-full rounded bg-rose-300" style={{ width: `${pct(d.financial.outOfPocketRemaining * 3, d.financial.outOfPocketMax * 4)}%` }} /></div></div>
-                  </div>
-                </div>
-              </div>
+              <PverifyFinancialPanel
+                title="Out-of-Pocket"
+                network="in"
+                providerMode={providerMode}
+                ui={ui}
+                lines={[
+                  {
+                    label: 'Individual',
+                    sublabel: 'Includes Med & RX',
+                    amount: usd(d.financial.outOfPocketMax),
+                    remaining: usd(d.financial.outOfPocketRemaining),
+                    remainingPct: pct(
+                      d.financial.outOfPocketRemaining,
+                      d.financial.outOfPocketMax
+                    ),
+                  },
+                  {
+                    label: 'Family',
+                    sublabel: 'Includes Med & RX',
+                    amount: usd(d.financial.outOfPocketMax * 2),
+                    remaining: usd(d.financial.outOfPocketRemaining),
+                    remainingPct: pct(
+                      d.financial.outOfPocketRemaining,
+                      d.financial.outOfPocketMax * 2
+                    ),
+                    barTone: 'amber',
+                  },
+                ]}
+              />
+              <PverifyFinancialPanel
+                title="Out-of-Pocket"
+                network="out"
+                providerMode={providerMode}
+                ui={ui}
+                lines={[
+                  {
+                    label: 'Individual',
+                    sublabel: 'Includes Med & RX',
+                    amount: usd(d.financial.outOfPocketMax * 2),
+                    remaining: usd(d.financial.outOfPocketRemaining * 2),
+                    remainingPct: pct(
+                      d.financial.outOfPocketRemaining * 2,
+                      d.financial.outOfPocketMax * 2
+                    ),
+                  },
+                  {
+                    label: 'Family',
+                    sublabel: 'Includes Med & RX',
+                    amount: usd(d.financial.outOfPocketMax * 4),
+                    remaining: usd(d.financial.outOfPocketRemaining * 3),
+                    remainingPct: pct(
+                      d.financial.outOfPocketRemaining * 3,
+                      d.financial.outOfPocketMax * 4
+                    ),
+                  },
+                ]}
+              />
             </div>
           </section>
 
@@ -1395,147 +1453,180 @@ export default function EligibilityResultAi({ providerMode = false }: { provider
             </div>
           </section>
 
-          <section
-            className={providerMode ? ui.cardClass : 'rounded-2xl border border-slate-700/80 bg-[#161f35] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.3)]'}
-            style={providerMode ? ui.cardStyle : undefined}
-          >
-            <div className="space-y-3">
-              <div className="max-w-2xl rounded-2xl border border-slate-700 bg-slate-800/70 px-4 py-3 text-sm text-slate-200">
-                Would you like us to coordinate your prescription request?
-              </div>
-              <div className="rounded-2xl border border-violet-500/30 bg-violet-500/10 p-4">
-                <p className="text-xs text-slate-300">Choose one option to continue</p>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <Button type="button" variant="outline" onClick={() => setIsCoordinateModalOpen(false)}>
-                    Not now
-                  </Button>
-                  <Button type="button" variant="primary" onClick={() => openCoordinateModal()}>
-                    Coordinate Prescription Request
-                  </Button>
+          {providerMode ? (
+            <EligibilityBenefitServiceChatSection
+              providerMode
+              coordinateOnly
+              cptOptionPrefix={CPT_OPTION_PREFIX}
+              coordinateRadioName="coordinate-provider-pverify"
+              isBenefitChatOpen={false}
+              isCoordinateModalOpen={isCoordinateModalOpen}
+              benefitChatMessages={[]}
+              benefitServiceSuggestions={[]}
+              benefitChatDraft={benefitChatDraft}
+              onBenefitChatDraftChange={setBenefitChatDraft}
+              selectedProcedureCpts={[]}
+              selectedServiceCodes={[]}
+              coordFirstName={coordFirstName}
+              coordStep={coordStep}
+              coordSearchError={coordSearchError}
+              coordRows={coordRows}
+              selectedCoordRowKey={selectedCoordRowKey}
+              onResetBenefitChat={() => setIsCoordinateModalOpen(false)}
+              onOpenBenefitChat={() => undefined}
+              onDismissCoordinate={() => setIsCoordinateModalOpen(false)}
+              onOpenCoordinate={() => openCoordinateModal()}
+              onBenefitServiceSelect={() => undefined}
+              onSubmitBenefitQuestion={() => undefined}
+              onCoordFirstName={setCoordFirstName}
+              onCoordLastName={setCoordLastName}
+              onCoordStep={setCoordStep}
+              onCoordSearchError={setCoordSearchError}
+              onClearBenefitChatDraft={() => setBenefitChatDraft('')}
+              onSelectCoordRow={setSelectedCoordRowKey}
+              onRunCoordinateSearch={runCoordinateSearch}
+              onProceedCoordinate={() => void proceedCoordinateRequest()}
+            />
+          ) : (
+            <section className="rounded-2xl border border-slate-700/80 bg-[#161f35] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.3)]">
+              <div className="space-y-3">
+                <div className="max-w-2xl rounded-2xl border border-slate-700 bg-slate-800/70 px-4 py-3 text-sm text-slate-200">
+                  Would you like us to coordinate your prescription request?
                 </div>
-              </div>
-              {isCoordinateModalOpen && (
-                <div className="rounded-2xl border border-slate-700 bg-slate-900/70 p-3">
-                  <div className="space-y-3">
-                    <div className="rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-2 text-sm text-slate-200">
-                      {coordStep === 'first' && 'Enter provider first name.'}
-                      {coordStep === 'last' && 'Enter provider last name.'}
-                      {coordStep === 'results' && 'Select one provider address and proceed.'}
-                    </div>
-                    {coordSearchError ? <p className="text-sm text-rose-300">{coordSearchError}</p> : null}
-                    {coordRows.length > 0 && (
-                      <div className="overflow-x-auto rounded-xl border border-slate-700">
-                        <table className="w-full min-w-[900px] text-left text-xs sm:text-sm">
-                          <thead className="bg-slate-800/80">
-                            <tr>
-                              <th className="px-3 py-2 text-xs uppercase tracking-wide text-slate-300">Select</th>
-                              <th className="px-3 py-2 text-xs uppercase tracking-wide text-slate-300">Provider</th>
-                              <th className="px-3 py-2 text-xs uppercase tracking-wide text-slate-300">NPI</th>
-                              <th className="px-3 py-2 text-xs uppercase tracking-wide text-slate-300">Address</th>
-                              <th className="px-3 py-2 text-xs uppercase tracking-wide text-slate-300">Phone</th>
-                              <th className="px-3 py-2 text-xs uppercase tracking-wide text-slate-300">Fax</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {coordRows.map((row) => (
-                              <tr key={row.rowKey} className="border-t border-slate-800">
-                                <td className="px-3 py-2">
-                                  <input
-                                    type="radio"
-                                    name="coordinate-provider-pverify"
-                                    checked={selectedCoordRowKey === row.rowKey}
-                                    onChange={() => setSelectedCoordRowKey(row.rowKey)}
-                                  />
-                                </td>
-                                <td className="px-3 py-2 text-slate-200">{row.name || '—'}</td>
-                                <td className="px-3 py-2 text-slate-200">{row.npi || '—'}</td>
-                                <td className="px-3 py-2 text-slate-200">{row.address || '—'}</td>
-                                <td className="px-3 py-2 text-slate-200">{row.phone || '—'}</td>
-                                <td className="px-3 py-2 text-slate-200">{row.fax || '—'}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2 rounded-2xl border border-slate-600 bg-slate-950/80 px-3 py-2">
-                      <input
-                        type="text"
-                        value={benefitChatDraft}
-                        onChange={(e) => setBenefitChatDraft(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key !== 'Enter') return
-                          const value = benefitChatDraft.trim()
-                          if (!value) return
-                          if (coordStep === 'first') {
-                            setCoordFirstName(value)
-                            setCoordStep('last')
-                            setCoordSearchError('')
-                            setBenefitChatDraft('')
-                            return
-                          }
-                          if (coordStep === 'last') {
-                            setCoordLastName(value)
-                            setCoordStep('results')
-                            setCoordSearchError('')
-                            setBenefitChatDraft('')
-                            void runCoordinateSearch(coordFirstName, value)
-                          }
-                        }}
-                        placeholder={
-                          coordStep === 'first'
-                            ? 'Type provider first name'
-                            : coordStep === 'last'
-                              ? 'Type provider last name'
-                              : 'Type search again to re-run lookup'
-                        }
-                        className="w-full bg-transparent text-sm text-slate-100 outline-none placeholder:text-slate-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const value = benefitChatDraft.trim()
-                          if (!value) return
-                          if (coordStep === 'first') {
-                            setCoordFirstName(value)
-                            setCoordStep('last')
-                            setCoordSearchError('')
-                            setBenefitChatDraft('')
-                            return
-                          }
-                          if (coordStep === 'last') {
-                            setCoordLastName(value)
-                            setCoordStep('results')
-                            setCoordSearchError('')
-                            setBenefitChatDraft('')
-                            void runCoordinateSearch(coordFirstName, value)
-                            return
-                          }
-                          if (coordStep === 'results' && value.toLowerCase() === 'search again') {
-                            void runCoordinateSearch()
-                            setBenefitChatDraft('')
-                          }
-                        }}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-500"
-                      >
-                        <Send className="h-4 w-4" />
-                      </button>
-                    </div>
-                    <div className="flex justify-end">
-                      <Button
-                        type="button"
-                        variant="primary"
-                        onClick={() => void proceedCoordinateRequest()}
-                        disabled={!selectedCoordRowKey}
-                      >
-                        Proceed
-                      </Button>
-                    </div>
+                <div className="rounded-2xl border border-violet-500/30 bg-violet-500/10 p-4">
+                  <p className="text-xs text-slate-300">Choose one option to continue</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    <Button type="button" variant="outline" onClick={() => setIsCoordinateModalOpen(false)}>
+                      Not now
+                    </Button>
+                    <Button type="button" variant="primary" onClick={() => openCoordinateModal()}>
+                      Coordinate Prescription Request
+                    </Button>
                   </div>
                 </div>
-              )}
-            </div>
-          </section>
+                {isCoordinateModalOpen && (
+                  <div className="rounded-2xl border border-slate-700 bg-slate-900/70 p-3">
+                    <div className="space-y-3">
+                      <div className="rounded-xl border border-slate-700 bg-slate-800/80 px-3 py-2 text-sm text-slate-200">
+                        {coordStep === 'first' && 'Enter provider first name.'}
+                        {coordStep === 'last' && 'Enter provider last name.'}
+                        {coordStep === 'results' && 'Select one provider address and proceed.'}
+                      </div>
+                      {coordSearchError ? <p className="text-sm text-rose-300">{coordSearchError}</p> : null}
+                      {coordRows.length > 0 && (
+                        <div className="overflow-x-auto rounded-xl border border-slate-700">
+                          <table className="w-full min-w-[900px] text-left text-xs sm:text-sm">
+                            <thead className="bg-slate-800/80">
+                              <tr>
+                                <th className="px-3 py-2 text-xs uppercase tracking-wide text-slate-300">Select</th>
+                                <th className="px-3 py-2 text-xs uppercase tracking-wide text-slate-300">Provider</th>
+                                <th className="px-3 py-2 text-xs uppercase tracking-wide text-slate-300">NPI</th>
+                                <th className="px-3 py-2 text-xs uppercase tracking-wide text-slate-300">Address</th>
+                                <th className="px-3 py-2 text-xs uppercase tracking-wide text-slate-300">Phone</th>
+                                <th className="px-3 py-2 text-xs uppercase tracking-wide text-slate-300">Fax</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {coordRows.map((row) => (
+                                <tr key={row.rowKey} className="border-t border-slate-800">
+                                  <td className="px-3 py-2">
+                                    <input
+                                      type="radio"
+                                      name="coordinate-provider-pverify"
+                                      checked={selectedCoordRowKey === row.rowKey}
+                                      onChange={() => setSelectedCoordRowKey(row.rowKey)}
+                                    />
+                                  </td>
+                                  <td className="px-3 py-2 text-slate-200">{row.name || '—'}</td>
+                                  <td className="px-3 py-2 text-slate-200">{row.npi || '—'}</td>
+                                  <td className="px-3 py-2 text-slate-200">{row.address || '—'}</td>
+                                  <td className="px-3 py-2 text-slate-200">{row.phone || '—'}</td>
+                                  <td className="px-3 py-2 text-slate-200">{row.fax || '—'}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-2 rounded-2xl border border-slate-600 bg-slate-950/80 px-3 py-2">
+                        <input
+                          type="text"
+                          value={benefitChatDraft}
+                          onChange={(e) => setBenefitChatDraft(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key !== 'Enter') return
+                            const value = benefitChatDraft.trim()
+                            if (!value) return
+                            if (coordStep === 'first') {
+                              setCoordFirstName(value)
+                              setCoordStep('last')
+                              setCoordSearchError('')
+                              setBenefitChatDraft('')
+                              return
+                            }
+                            if (coordStep === 'last') {
+                              setCoordLastName(value)
+                              setCoordStep('results')
+                              setCoordSearchError('')
+                              setBenefitChatDraft('')
+                              void runCoordinateSearch(coordFirstName, value)
+                            }
+                          }}
+                          placeholder={
+                            coordStep === 'first'
+                              ? 'Type provider first name'
+                              : coordStep === 'last'
+                                ? 'Type provider last name'
+                                : 'Type search again to re-run lookup'
+                          }
+                          className="w-full bg-transparent text-sm text-slate-100 outline-none placeholder:text-slate-500"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const value = benefitChatDraft.trim()
+                            if (!value) return
+                            if (coordStep === 'first') {
+                              setCoordFirstName(value)
+                              setCoordStep('last')
+                              setCoordSearchError('')
+                              setBenefitChatDraft('')
+                              return
+                            }
+                            if (coordStep === 'last') {
+                              setCoordLastName(value)
+                              setCoordStep('results')
+                              setCoordSearchError('')
+                              setBenefitChatDraft('')
+                              void runCoordinateSearch(coordFirstName, value)
+                              return
+                            }
+                            if (coordStep === 'results' && value.toLowerCase() === 'search again') {
+                              void runCoordinateSearch()
+                              setBenefitChatDraft('')
+                            }
+                          }}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-500"
+                        >
+                          <Send className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <div className="flex justify-end">
+                        <Button
+                          type="button"
+                          variant="primary"
+                          onClick={() => void proceedCoordinateRequest()}
+                          disabled={!selectedCoordRowKey}
+                        >
+                          Proceed
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
 
           {toast ? <Toast message={toast} type="info" isVisible={Boolean(toast)} onClose={() => setToast('')} /> : null}
         </div>
@@ -1663,12 +1754,20 @@ export default function EligibilityResultAi({ providerMode = false }: { provider
           <ProviderEligibilityPageHeader
             description="Review coverage, deductibles, and benefit details from the eligibility response."
             actions={
-              <Button type="button" variant="outline" onClick={() => void handleDownloadPdf()} disabled={pdfLoading}>
-                <span className="inline-flex items-center gap-2">
-                  <Download className="h-4 w-4" />
-                  {pdfLoading ? 'Downloading...' : 'Download PDF'}
-                </span>
-              </Button>
+              <>
+                <Button type="button" variant="outline" onClick={() => void handleDownloadPdf()} disabled={pdfLoading}>
+                  <span className="inline-flex items-center gap-2">
+                    <Download className="h-4 w-4" />
+                    {pdfLoading ? 'Downloading...' : 'Download PDF'}
+                  </span>
+                </Button>
+                <Button type="button" variant="outline" onClick={() => navigate(intakeRoute)}>
+                  <span className="inline-flex items-center gap-2">
+                    <ArrowLeft className="h-4 w-4" />
+                    New Check
+                  </span>
+                </Button>
+              </>
             }
           />
         ) : (

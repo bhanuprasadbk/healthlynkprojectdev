@@ -12,7 +12,6 @@ import {
   Building2,
   Code,
   FilePlus,
-  FileCheck,
   SlidersHorizontal,
   MessageSquare,
   MessageCircle,
@@ -154,13 +153,6 @@ const PrivateLayout = () => {
       icon: FilePlus,
       label: 'Patient Intake',
       path: ROUTES.PROVIDER_PATIENT_INTAKE,
-    },
-    {
-      kind: 'link',
-      key: 'eligibility-result',
-      icon: FileCheck,
-      label: 'Eligibility Result',
-      path: ROUTES.PROVIDER_ELIGIBILITY_RESULT,
     },
     { kind: 'link', key: 'prior-auth', icon: FileText, label: 'Prior Auth', path: ROUTES.PRIOR_AUTH },
     {

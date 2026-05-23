@@ -56,6 +56,7 @@ function App() {
               <BrowserRouter basename="/">
                 <AuthProvider>
                   <Routes>
+                <Route path="prior_auth" element={<Navigate to={ROUTES.PRIOR_AUTH} replace />} />
                 <Route element={<PublicLayout />}>
                   <Route path="/" element={<HomeEntry />} />
                   <Route path="patient" element={<PatientHomeGate />} />
@@ -76,7 +77,8 @@ function App() {
                   <Route path="app" element={<Navigate to="/dashboard" replace />} />
                   <Route path="app/x1" element={<Navigate to="/payors" replace />} />
                   <Route path="app/x2" element={<Navigate to="/cpt-hcpc" replace />} />
-                  <Route path="app/x3" element={<Navigate to="/prior-auth" replace />} />
+                  <Route path="app/x3" element={<Navigate to={ROUTES.PRIOR_AUTH} replace />} />
+                  <Route path="prior_auth" element={<Navigate to={ROUTES.PRIOR_AUTH} replace />} />
                   <Route path="d" element={<Navigate to="/dashboard" replace />} />
                   <Route path="app/x5" element={<Navigate to="/settings" replace />} />
                   <Route path="app/x6" element={<Navigate to="/notifications" replace />} />

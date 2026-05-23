@@ -25,6 +25,7 @@ import { useTheme } from '../contexts/ThemeContext'
 import {
   darkIntakeChatUi,
   intakeChatGradientClass,
+  PATIENT_GENDER_OPTIONS,
   providerIntakeChatUi,
 } from '../theme/intakeChatUi'
 
@@ -250,7 +251,7 @@ export default function PatientIntakeAiChat({ providerMode = false }: { provider
     const base: ChatMessage[] = [
       {
         role: 'bot',
-        text: 'Hi! I am your eligibility assistant. I will collect only the required details step by step.',
+        text: 'Hi! I am your eligibility assistant. I will walk you through the details step by step.',
       },
     ]
     for (const key of activePromptOrder) {
@@ -696,20 +697,22 @@ export default function PatientIntakeAiChat({ providerMode = false }: { provider
                 className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`inline-flex max-w-[92%] items-start gap-2 rounded-2xl px-4 py-3 shadow-sm ${
-                    m.role === 'bot' ? ui.botBubbleClass : ui.userBubbleClass
+                  className={`inline-flex max-w-[92%] items-start gap-2.5 rounded-2xl shadow-sm ${
+                    m.role === 'bot'
+                      ? `px-4 py-3 ${ui.botBubbleClass}`
+                      : `px-5 py-3.5 ${ui.userBubbleClass}`
                   }`}
                   style={m.role === 'bot' ? ui.botBubbleStyle : ui.userBubbleStyle}
                 >
                   {m.role === 'bot' && (
                     <span className={ui.botAvatarClass} style={ui.botAvatarStyle}>
-                      <Bot className="h-3.5 w-3.5" />
+                      <Bot className={providerMode ? 'h-4 w-4' : 'h-3.5 w-3.5'} />
                     </span>
                   )}
                   <p className={m.role === 'user' ? 'text-right' : ''}>{m.text}</p>
                   {m.role === 'user' && (
                     <span className={ui.userAvatarClass} style={ui.userAvatarStyle}>
-                      <UserRound className="h-3.5 w-3.5" />
+                      <UserRound className={providerMode ? 'h-4 w-4' : 'h-3.5 w-3.5'} />
                     </span>
                   )}
                 </div>
@@ -719,7 +722,7 @@ export default function PatientIntakeAiChat({ providerMode = false }: { provider
               <div className="flex justify-start">
                 <div className={ui.typingBubbleClass} style={ui.typingBubbleStyle}>
                   <span className={ui.botAvatarClass} style={ui.botAvatarStyle}>
-                    <PencilLine className="h-3.5 w-3.5" />
+                    <PencilLine className={providerMode ? 'h-4 w-4' : 'h-3.5 w-3.5'} />
                   </span>
                   <p>{animatedQuestion}</p>
                 </div>
@@ -826,24 +829,38 @@ export default function PatientIntakeAiChat({ providerMode = false }: { provider
             )}
             {nextPrompt === 'patientGender' && (
               <div
-                className={`${ui.choicePanelClass} flex flex-wrap gap-2`}
-                style={ui.choicePanelStyle}
+                className={ui.genderChoicePanelClass}
+                style={ui.genderChoicePanelStyle}
               >
-                {[
-                  { value: 'male', label: 'Male' },
-                  { value: 'female', label: 'Female' },
-                  { value: 'other', label: 'Other' },
-                ].map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => submitAnswer('patientGender', option.value)}
-                    className={ui.optionBtnClass}
-                    style={ui.optionBtnStyle}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+                <p className={`${ui.choiceHintClass} text-sm font-semibold`} style={ui.choiceHintStyle}>
+                  Select patient gender
+                </p>
+                <div className="flex flex-wrap items-center gap-3">
+                  {PATIENT_GENDER_OPTIONS.map((option) => {
+                    const genderBtnStyle = {
+                      backgroundColor: theme.colors.buttonPrimary,
+                      borderColor: theme.colors.buttonPrimaryHover,
+                      color: '#ffffff',
+                    }
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => submitAnswer('patientGender', option.value)}
+                        className={ui.genderOptionBtnClass}
+                        style={genderBtnStyle}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.backgroundColor = theme.colors.buttonPrimaryHover
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.backgroundColor = theme.colors.buttonPrimary
+                        }}
+                      >
+                        {option.label}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
             )}
             {nextPrompt === 'payor' && (

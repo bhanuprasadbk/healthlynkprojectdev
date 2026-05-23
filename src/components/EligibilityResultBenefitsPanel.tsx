@@ -101,6 +101,8 @@ type BenefitServiceChatSectionProps = {
   onRunCoordinateSearch: (firstName?: string, lastName?: string) => void
   onProceedCoordinate: () => void
   providerMode?: boolean
+  /** When true, only the prescription coordination prompts are shown (pVerify path). */
+  coordinateOnly?: boolean
 }
 
 export function EligibilityBenefitServiceChatSection({
@@ -134,6 +136,7 @@ export function EligibilityBenefitServiceChatSection({
   onRunCoordinateSearch,
   onProceedCoordinate,
   providerMode = false,
+  coordinateOnly = false,
 }: BenefitServiceChatSectionProps) {
   const { theme } = useTheme()
   const ui = useMemo(
@@ -197,47 +200,51 @@ export function EligibilityBenefitServiceChatSection({
       style={providerMode ? ui.cardStyle : undefined}
     >
       <div className="space-y-3">
-        <div
-          className={
-            providerMode
-              ? 'max-w-2xl rounded-2xl border px-4 py-3 text-sm shadow-sm'
-              : 'max-w-2xl rounded-2xl border border-slate-700 bg-slate-800/70 px-4 py-3 text-sm text-slate-200'
-          }
-          style={
-            providerMode
-              ? {
-                  backgroundColor: theme.colors.primaryLight,
-                  borderColor: theme.colors.cardBorder,
-                  color: theme.colors.textPrimary,
-                }
-              : undefined
-          }
-        >
-          Would you like to learn about a specific service?
-        </div>
-        <div
-          className={
-            providerMode && chatUi
-              ? chatUi.choicePanelClass
-              : 'rounded-2xl border border-violet-500/30 bg-violet-500/10 p-4'
-          }
-          style={providerMode && chatUi ? chatUi.choicePanelStyle : undefined}
-        >
-          <p
-            className={providerMode && chatUi ? chatUi.choiceHintClass : 'text-xs text-slate-300'}
-            style={providerMode && chatUi ? chatUi.choiceHintStyle : undefined}
-          >
-            Choose one option to continue
-          </p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            <Button type="button" variant="outline" onClick={onResetBenefitChat}>
-              Not now
-            </Button>
-            <Button type="button" variant="primary" onClick={onOpenBenefitChat}>
-              Yes, learn specific service
-            </Button>
-          </div>
-        </div>
+        {!coordinateOnly && (
+          <>
+            <div
+              className={
+                providerMode
+                  ? 'max-w-2xl rounded-2xl border px-4 py-3 text-sm shadow-sm'
+                  : 'max-w-2xl rounded-2xl border border-slate-700 bg-slate-800/70 px-4 py-3 text-sm text-slate-200'
+              }
+              style={
+                providerMode
+                  ? {
+                      backgroundColor: theme.colors.primaryLight,
+                      borderColor: theme.colors.cardBorder,
+                      color: theme.colors.textPrimary,
+                    }
+                  : undefined
+              }
+            >
+              Would you like to learn about a specific service?
+            </div>
+            <div
+              className={
+                providerMode && chatUi
+                  ? chatUi.choicePanelClass
+                  : 'rounded-2xl border border-violet-500/30 bg-violet-500/10 p-4'
+              }
+              style={providerMode && chatUi ? chatUi.choicePanelStyle : undefined}
+            >
+              <p
+                className={providerMode && chatUi ? chatUi.choiceHintClass : 'text-xs text-slate-300'}
+                style={providerMode && chatUi ? chatUi.choiceHintStyle : undefined}
+              >
+                Choose one option to continue
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                <Button type="button" variant="outline" onClick={onResetBenefitChat}>
+                  Not now
+                </Button>
+                <Button type="button" variant="primary" onClick={onOpenBenefitChat}>
+                  Yes, learn specific service
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
         <div
           className={
             providerMode

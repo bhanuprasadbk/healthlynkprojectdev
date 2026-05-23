@@ -34,7 +34,7 @@ export default defineConfig(({ mode }) => {
       env.VITE_API_BASE_URL = '/api'
     }
   }
-  // Dev proxy target: production SWA-linked API (same backend as healthlynk.ai in prod).
+  // Dev proxy target: production SWA-linked API (same backend as dev.healthlynk.ai in prod).
   // Do NOT proxy to *.azurewebsites.net — App Service Authentication blocks login there.
   const defaultApiProxyTarget = 'https://dev.healthlynk.ai'
   // Overrides: VITE_DEV_API_PROXY_TARGET=http://127.0.0.1:5000 (local Flask)
@@ -59,23 +59,12 @@ export default defineConfig(({ mode }) => {
         target: 'https://rainbow.exwyn.com',
         changeOrigin: true,
       },
-      // Local-dev CORS bypass: localhost:5173/api → SWA-linked API (same as production).
+      // Local-dev CORS bypass: localhost:5173/api → Azure App Service.
       '/api': {
         target: apiProxyTarget,
         changeOrigin: true,
         secure: true,
         cookieDomainRewrite: 'localhost',
-        // Backend sets Secure cookies; browsers drop them on http://localhost — strip for dev.
-        configure: (proxy) => {
-          proxy.on('proxyRes', (proxyRes) => {
-            const raw = proxyRes.headers['set-cookie']
-            if (!raw) return
-            const cookies = Array.isArray(raw) ? raw : [raw]
-            proxyRes.headers['set-cookie'] = cookies.map((cookie) =>
-              cookie.replace(/;\s*Secure/gi, '')
-            )
-          })
-        },
       },
       // NPPES — must match DEFAULT_NPPES_PROXY_PATH in src/services/npiRegistry.ts
       '/npi-registry': {
