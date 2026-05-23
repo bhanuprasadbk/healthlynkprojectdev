@@ -2,6 +2,7 @@
   "routes": [
     {
       "route": "/api/*",
+      "rewrite": "https://healthlynkapidev-h0ggfvfkeubmg6c3.centralus-01.azurewebsites.net/api/*",
       "allowedRoles": ["anonymous", "authenticated"]
     },
     {
