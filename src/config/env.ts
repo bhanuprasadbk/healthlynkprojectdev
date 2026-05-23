@@ -35,7 +35,7 @@ function isDeployedSpaHost(): boolean {
   if (typeof window === 'undefined') return false
   const host = window.location.hostname.toLowerCase()
   return (
-    host === '    ' ||
+    host === 'healthlynk.ai' ||
     host === 'www.healthlynk.ai' ||
     host === 'dev.healthlynk.ai' ||
     host === 'www.dev.healthlynk.ai' ||
